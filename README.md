@@ -9,6 +9,7 @@ Published at [DevSecOps Guide](https://hrytsenko.github.io/devsecops-guide/).
 ```text
 src/content/docs/
   index.mdx        # home
+  principles/      # grounding principles
 ```
 
 ## Develop

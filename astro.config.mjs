@@ -14,6 +14,7 @@ export default defineConfig({
 			description: 'An opinionated guide to DevSecOps.',
 			social: [{ icon: 'github', label: 'GitHub', href: repo }],
 			customCss: ['./src/styles/custom.css'],
+			sidebar: [{ label: 'Principles', items: [{ autogenerate: { directory: 'principles' } }] }],
 		}),
 	],
 });
