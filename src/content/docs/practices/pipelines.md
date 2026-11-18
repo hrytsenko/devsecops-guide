@@ -7,7 +7,7 @@ sidebar:
 
 Move each change from commit to production through one automated path.
 
-A pipeline takes each change that a team proposes, merges it into the main branch, builds it into a verified package, deploys that package to each environment, promotes it from one environment to the next, and releases its functionality to users.
+A pipeline takes each change that a team proposes, merges it into the main branch, builds it into a verified package, deploys that package to each environment, promotes it from one environment to the next, and releases its functionality to users (see [NIST SP 800-204D]).
 Every component goes through the same stages, so the same controls apply to every change, whether a person or an agent made it.
 
 | Stage               | Description                                                       |
@@ -28,8 +28,6 @@ The principles apply to the pipelines themselves:
 
 ## Foundations
 
-Every stage builds on the same identities, findings policy, repositories, and clusters.
-
 ### Identities
 
 People and agents prove their identities through [OpenID Connect] with the organization's identity provider, and [Tekton] tasks with their service accounts, to get short-lived credentials.
@@ -41,7 +39,7 @@ The public Sigstore instance is faster to start with, but records the identity o
 ### Findings
 
 Every check on a pull request is required, and each scanner reports its findings in [SARIF].
-The rulesets of the checks decide which findings block a pull request or an image, and how long each finding can stay accepted.
+The rulesets of the checks decide which findings block a pull request or an image, and how long each finding can stay accepted (see [NIST SSDF]).
 The team that owns the repository a finding comes from fixes it, or accepts it there when it can't, such as when a third-party component has no fix yet.
 Each acceptance records a reason, an owner, and an expiry, as an [OpenVEX] statement for a vulnerability.
 Every check, including the image scan and the daily rescan, skips an accepted finding until its acceptance expires.
@@ -55,7 +53,7 @@ Declaring environments in each component's repository is faster to start with, b
 
 ### Clusters
 
-Pipelines run on the organization's [Kubernetes] clusters, under the platform team's control: [Tekton] runs their tasks and checks, [Argo CD] syncs environments, and [Argo Rollouts] releases new versions.
+Pipelines run on the organization's [Kubernetes] clusters, under the platform team's control: [Tekton] runs their tasks and checks, [Argo CD] syncs environments (see [OpenGitOps]), and [Argo Rollouts] releases new versions.
 This fits organizations that already run their environments on Kubernetes.
 A hosted CI service is faster to start with and offers many ready-made steps, but gives less control as delivery grows.
 
@@ -92,7 +90,7 @@ Verify the provider's main branch against each changed contract from a [Pact Bro
 
 The build stage turns each change into the package that every environment runs.
 
-It applies [Zero trust] and relies on [Portable package]: every later stage verifies the package rather than trusting it, and the pipeline builds it once for every environment.
+It applies [Zero trust] and relies on [Portable package]: every later stage verifies the package rather than trusting it (see [NIST SP 800-190]), and the pipeline builds it once for every environment.
 
 ### Build images
 
