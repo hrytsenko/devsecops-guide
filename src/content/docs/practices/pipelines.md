@@ -182,7 +182,7 @@ Alert the owning team through [Prometheus] alerting rules when its pipeline runs
 
 ## References
 
-### Frameworks
+Frameworks:
 
 - [NIST SSDF][]: secure software development.
 - [NIST SP 800-190][]: container security.
@@ -190,7 +190,7 @@ Alert the owning team through [Prometheus] alerting rules when its pipeline runs
 - [SLSA][]: build integrity and provenance.
 - [OpenGitOps][]: GitOps.
 
-### Standards
+Standards:
 
 - [OpenID Connect][]: federated identity.
 - [OCI][]: container images and registries.
@@ -203,7 +203,7 @@ Alert the owning team through [Prometheus] alerting rules when its pipeline runs
 - [AGENTS.md][]: agent instructions.
 - [Agent Skills][]: agent skills.
 
-### Code tools
+Code tools:
 
 - [pre-commit][]: commit hook framework.
 - [Gitleaks][]: credential scanner.
@@ -213,7 +213,7 @@ Alert the owning team through [Prometheus] alerting rules when its pipeline runs
 - [Gitsign][]: commit signing tool.
 - [Pact][]: contract testing tool.
 
-### Image tools
+Image tools:
 
 - [Hadolint][]: Dockerfile linter.
 - [Distroless][]: minimal base images.
@@ -223,7 +223,7 @@ Alert the owning team through [Prometheus] alerting rules when its pipeline runs
 - [Cosign][]: image signing tool.
 - [Harbor][]: image registry.
 
-### Pipeline tools
+Pipeline tools:
 
 - [Tekton][]: pipeline engine.
 - [Tekton Chains][]: provenance controller.
@@ -236,7 +236,7 @@ Alert the owning team through [Prometheus] alerting rules when its pipeline runs
 - [Playwright][]: smoke testing tool.
 - [ZAP][]: dynamic application scanner.
 
-### Environment tools
+Environment tools:
 
 - [Kubernetes][]: orchestration platform.
 - [Istio][]: service mesh.
