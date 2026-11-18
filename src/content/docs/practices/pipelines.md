@@ -7,14 +7,15 @@ sidebar:
 
 Move each change from commit to production through one automated path.
 
-A pipeline takes each change that a team proposes, merges it into the main branch, builds it into a verified package, deploys that package to environments, and releases its functionality to users.
+A pipeline takes each change that a team proposes, merges it into the main branch, builds it into a verified package, deploys that package to each environment, promotes it from one environment to the next, and releases its functionality to users.
 Every component goes through the same stages, so the same controls apply to every change, whether a person or an agent made it.
 
 | Stage               | Description                                                       |
 | ------------------- | ----------------------------------------------------------------- |
 | [Merge](#merge)     | Decide how changes enter the main branch.                         |
 | [Build](#build)     | Turn each change into the package that every environment runs.    |
-| [Deploy](#deploy)   | Provision each environment and make a verified package run in it. |
+| [Deploy](#deploy)   | Provision each environment and run what its repositories declare. |
+| [Promote](#promote) | Move each verified package through environments to production.    |
 | [Release](#release) | Expose the functionality of each new version to users.            |
 
 The principles apply to the pipelines themselves:
@@ -110,9 +111,9 @@ Rescan daily with [Grype] the SBOM of each image that an environment repository 
 
 ## Deploy
 
-The deploy stage provisions each environment and makes a verified package run in it.
+The deploy stage provisions each environment and runs what its repositories declare.
 
-It applies [Everything as code] and relies on [Portable package] and [External configuration]: each environment reconciles with the state that a repository declares, runs the same package with its own configuration, and gets through promotion only images that a component's pipeline or the platform team's import pipeline signed.
+It applies [Everything as code] and [Zero trust] and relies on [External configuration]: each environment reconciles with the state that its repositories declare, admits only signed images, and gives every component its own configuration and credentials.
 
 ### Reconcile infrastructure
 
@@ -130,6 +131,12 @@ Restrict each team's [Argo CD] project to the team's own namespaces, and allow c
 Sync secrets into each environment from the organization's secret store with [ESO], and keep them out of every environment repository.
 Enforce the platform team's admission policies in each environment with [Kyverno], and admit only images from the organization's [Harbor] that are referenced by digest and attested with an SBOM, and either signed by [Tekton Chains] with SLSA provenance that names their component's repository, or signed by the platform team's import pipeline.
 Give people and agents read-only access to environments.
+
+## Promote
+
+The promote stage moves each verified package through environments to production.
+
+It applies [Zero trust] and relies on [Portable package] and [Explicit interface]: the same image moves from one environment to the next only through verified promotions, and a component's image enters each only when it's compatible with every component deployed there.
 
 ### Promote packages
 
