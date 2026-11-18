@@ -1,11 +1,17 @@
 Buildah
+Falco
 flagd
 Gitleaks
 Gitsign
 Grype
+gVisor
 Hadolint
+HolmesGPT
 [Rr]escan
 Semgrep
 Sigstore
 Syft
 Tekton
+Timesketch
+Velero
+Velociraptor

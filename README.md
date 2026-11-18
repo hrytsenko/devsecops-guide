@@ -8,10 +8,11 @@ Published at [DevSecOps Guide](https://hrytsenko.github.io/devsecops-guide/).
 
 ```text
 src/content/docs/
-  index.mdx        # home
-  principles/      # grounding principles
-  practices/       # principles applied to the model
-    pipelines.md   # from commit to release
+  index.mdx          # home
+  principles/        # grounding principles
+  practices/         # principles applied to the model
+    pipelines.md     # from commit to release
+    environments.md  # from isolation to recovery
 ```
 
 ## Develop

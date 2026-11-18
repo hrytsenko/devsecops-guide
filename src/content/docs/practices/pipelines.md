@@ -22,7 +22,6 @@ The principles apply to the pipelines themselves:
 
 - [Everything as code]: pipelines and their templates are manifests that change only through review, and the cluster runs them as the main branch declares.
 - [Shift left]: people and agents run the same checks as the pipeline before they push, so they see its verdict first.
-- [Self-service]: the platform team owns and shares pipeline templates, and each team uses them to set up everything a new component needs in one request.
 - [Zero trust]: each pipeline task uses short-lived credentials where possible, and runs under the same isolation as any other workload.
 - [Closed loop]: each team measures the throughput and stability of its delivery, and fixes its pipelines where delivery slows down or breaks.
 
@@ -41,9 +40,10 @@ The public Sigstore instance is faster to start with, but records the identity o
 Every check on a pull request is required, and each scanner reports its findings in [SARIF].
 The rulesets of the checks decide which findings block a pull request or an image, and how long each finding can stay accepted (see [NIST SSDF]).
 The team that owns the repository a finding comes from fixes it, or accepts it there when it can't, such as when a third-party component has no fix yet.
-Each acceptance records a reason, an owner, and an expiry, as an [OpenVEX] statement for a vulnerability.
-Every check, including the image scan and the daily rescan, skips an accepted finding until its acceptance expires.
-Ignoring findings in each tool's own configuration is faster to start with, but leaves them without owners or expiry dates.
+Only the platform team accepts admission findings, as [Kyverno] policy exceptions.
+Each acceptance records a reason, an owner, and a date, as an [OpenVEX] statement for a vulnerability that doesn't affect the component.
+Every check, including the image scan and the daily rescan, skips an accepted finding until it's older than its ruleset allows.
+Ignoring findings in each tool's own configuration is faster to start with, but leaves them without owners or time limits.
 
 ### Repositories
 
@@ -53,7 +53,7 @@ Declaring environments in each component's repository is faster to start with, b
 
 ### Clusters
 
-Pipelines run on the organization's [Kubernetes] clusters, under the platform team's control: [Tekton] runs their tasks and checks, [Argo CD] syncs environments (see [OpenGitOps]), and [Argo Rollouts] releases new versions.
+Pipelines run on the organization's [Kubernetes] clusters, under the platform team's control: [Tekton] runs their tasks and checks, [Argo CD] syncs environments (see [OpenGitOps]), and [Argo Rollouts] releases new versions in them.
 This fits organizations that already run their environments on Kubernetes.
 A hosted CI service is faster to start with and offers many ready-made steps, but gives less control as delivery grows.
 
@@ -68,7 +68,7 @@ It applies [Shift left] and [Zero trust] and relies on [Explicit interface]: eac
 Merge small changes into the main branch at least daily, and keep unfinished functionality behind feature flags.
 Run in [pre-commit] hooks every check that analyzes changes in the pipeline, with the same rulesets.
 Protect the main branch: require a pull request and the required pipeline checks, and block direct and force pushes.
-Require an approval from a person or an agent other than the author on every pull request except those that promote an image to an environment.
+Require an approval from a person or an agent other than the author on every pull request except those that promote an image or a module version to an environment.
 Assign reviewers by path in a code owners file, and require a person from the owning team to approve changes to sensitive paths, such as pipeline templates, policies, and accepted findings.
 Pin dependencies in lock files, base images by digest, and [Tekton] tasks and tools by version, and open update pull requests for each of them with [Renovate].
 
@@ -128,7 +128,6 @@ Declare each component's image digest and environment-specific configuration for
 Restrict each team's [Argo CD] project to the team's own namespaces, and allow cluster-scoped resources and [Kyverno] policy exceptions only in the platform team's project.
 Sync secrets into each environment from the organization's secret store with [ESO], and keep them out of every environment repository.
 Enforce the platform team's admission policies in each environment with [Kyverno], and admit only images from the organization's [Harbor] that are referenced by digest and attested with an SBOM, and either signed by [Tekton Chains] with SLSA provenance that names their component's repository, or signed by the platform team's import pipeline.
-Give people and agents read-only access to environments.
 
 ## Promote
 
@@ -136,19 +135,19 @@ The promote stage moves each verified package through environments to production
 
 It applies [Zero trust] and relies on [Portable package] and [Explicit interface]: the same image moves from one environment to the next only through verified promotions, and a component's image enters each only when it's compatible with every component deployed there.
 
-### Promote packages
+### Promote images
 
-Promote each package from a task in the platform team's templates that opens a pull request with its digest in an environment's overlay when the [Pact Broker] confirms that it's compatible with every component deployed there.
-Promote it to the first environment after its image is signed and attested, and to each next environment after it rolls out and passes smoke tests with [Playwright] in the current one and, in pre-production, a dynamic scan with [ZAP].
+Promote each image from a task in the platform team's templates that opens a pull request with its digest in an environment's overlay when the [Pact Broker] confirms that it's compatible with every component deployed there.
+Promote it to the first environment after it's signed and attested, and to each next environment after it rolls out and passes smoke tests with [Playwright] in the current one and, in pre-production, a dynamic scan with [ZAP].
 Promote each imported image that an environment runs the same way, without the [Pact Broker] check.
 Record in the [Pact Broker] each version that runs in an environment, from the task that runs its smoke tests there, before they start.
-Roll back a package from the promotion task, as a promotion of the digest that the environment ran before, when its rollout or smoke tests fail, or when its owning team asks.
+Roll back an image from the promotion task, as a promotion of the digest that the environment ran before, when its rollout or smoke tests fail, or when its owning team asks.
 
 ### Verify promotions
 
-Verify on each pull request to an environment repository that only promotion commits set or update image digests, that the promotion task signed each of them, and that they change nothing else.
-Verify that each new digest is one that the previous environment runs or that this environment ran before.
-In the first environment, verify instead that [Tekton Chains] signed it with SLSA provenance naming the main branch of its component's repository, or that the platform team's import pipeline signed it.
+Verify on each pull request to an environment repository that only promotion commits set or update image digests or module versions, that a promotion task signed each of them with [Gitsign], and that they change nothing else.
+Verify that each new digest or module version is one that the previous environment runs or that this environment ran before.
+In the first environment, verify instead with [Cosign] that [Tekton Chains] signed it with SLSA provenance naming the main branch of its component's repository, or that the platform team's import pipeline signed it.
 Merge each promotion automatically without an approval when its required checks pass, in every environment including production.
 
 ## Release
@@ -168,14 +167,13 @@ Remove each flag from the code and from the environment repository once its func
 
 Release each new version as a canary with [Argo Rollouts], and shift traffic to it from users and from other components through [Istio].
 Keep each database schema change compatible with the stable version, and ship it in an earlier version than the code that depends on it.
-Collect the metrics of each version with [OpenTelemetry] into [Prometheus], labeled by version.
 Define the success criteria of each canary increment as [Prometheus] queries in an [Argo Rollouts] analysis template that compare the canary with the stable version.
 Send the result of each rollout to the team that owns the component through [Argo Rollouts] notifications.
 
 ### Measure delivery
 
 Collect the metrics of [Tekton] pipeline runs, [Argo CD] syncs, and [Argo Rollouts] canaries into [Prometheus], labeled by component and environment.
-Track for each team in [Prometheus] how often it deploys to production, how long its changes take to reach production, how often its deployments roll back, and how long it takes to recover from a failed deployment.
+Track the [DORA] metrics of each team in [Prometheus]: how often it deploys to production, how long its changes take to reach production, how often its deployments fail in production, and how long it takes to recover from a failed deployment.
 Alert the owning team through [Prometheus] alerting rules when its pipeline runs fail or slow down.
 
 ## References
@@ -187,6 +185,7 @@ Frameworks:
 - [NIST SP 800-204D][]: supply chain security.
 - [SLSA][]: build integrity and provenance.
 - [OpenGitOps][]: GitOps.
+- [DORA][]: delivery performance.
 
 Standards:
 
@@ -197,7 +196,6 @@ Standards:
 - [SARIF][]: analysis findings.
 - [OpenVEX][]: vulnerability statements.
 - [OpenFeature][]: feature flags.
-- [OpenTelemetry][]: traces, metrics, and logs.
 - [AGENTS.md][]: agent instructions.
 - [Agent Skills][]: agent skills.
 
@@ -245,7 +243,6 @@ Environment tools:
 
 [Closed loop]: ../../principles/devsecops/#closed-loop
 [Everything as code]: ../../principles/devsecops/#everything-as-code
-[Self-service]: ../../principles/devsecops/#self-service
 [Shift left]: ../../principles/devsecops/#shift-left
 [Zero trust]: ../../principles/devsecops/#zero-trust
 [Portable package]: ../../principles/cloud-native/#portable-package
@@ -259,6 +256,7 @@ Environment tools:
 [NIST SP 800-204D]: https://csrc.nist.gov/pubs/sp/800/204/d/final
 [SLSA]: https://slsa.dev/
 [OpenGitOps]: https://opengitops.dev/
+[DORA]: https://dora.dev/
 
 [OpenID Connect]: https://openid.net/
 [OCI]: https://opencontainers.org/
@@ -267,7 +265,6 @@ Environment tools:
 [SARIF]: https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html
 [OpenVEX]: https://openvex.dev/
 [OpenFeature]: https://openfeature.dev/
-[OpenTelemetry]: https://opentelemetry.io/
 [AGENTS.md]: https://agents.md/
 [Agent Skills]: https://agentskills.io/
 
