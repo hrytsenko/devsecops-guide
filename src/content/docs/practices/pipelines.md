@@ -48,7 +48,7 @@ Ignoring findings in each tool's own configuration is faster to start with, but 
 ### Repositories
 
 Each team declares its part of every environment in its environment repository: infrastructure in [OpenTofu], components in [Kustomize] overlays, and feature flags in [flagd] definitions.
-The platform team declares the shared parts, such as [Kyverno] admission policies, in its own environment repository, and keeps pipeline templates, agent skills, and the rulesets of every check in a shared repository.
+The platform team declares the shared parts, such as [Kyverno] admission policies, in its own environment repository, and keeps in a shared repository the pipeline templates, agent skills, rulesets of every check, and the list of third-party images to import.
 Declaring environments in each component's repository is faster to start with, but every promotion then lands in the code's history and triggers its pipelines.
 
 ### Clusters
@@ -120,11 +120,11 @@ Declare the resources of each environment in an [OpenTofu] configuration, pin it
 Plan each change for every environment that it affects from a task with read-only credentials, and post each plan as a pull request comment.
 Apply each merged change from a task, and reapply every environment daily.
 Promote each module version from a task that opens a pull request with it: to the first environment after it's released, and to each next environment after it applies in the current one.
-Hold any apply that would destroy or replace a resource until the team that owns the resource approves it.
+Hold any apply that would destroy or replace a resource until a person from the owning team approves it.
 
 ### Reconcile environments
 
-Declare each component's image digest and environment-specific configuration for each environment in a [Kustomize] overlay, and sync it with [Argo CD] with automated pruning and self-healing.
+Declare each component's image digest and environment-specific configuration for each environment in a [Kustomize] overlay, and sync the overlays and [flagd] definitions with [Argo CD] with automated pruning and self-healing.
 Restrict each team's [Argo CD] project to the team's own namespaces, and allow cluster-scoped resources and [Kyverno] policy exceptions only in the platform team's project.
 Sync secrets into each environment from the organization's secret store with [ESO], and keep them out of every environment repository.
 Enforce the platform team's admission policies in each environment with [Kyverno], and admit only images from the organization's [Harbor] that are referenced by digest and attested with an SBOM, and either signed by [Tekton Chains] with SLSA provenance that names their component's repository, or signed by the platform team's import pipeline.
@@ -139,14 +139,14 @@ It applies [Zero trust] and relies on [Portable package] and [Explicit interface
 ### Promote packages
 
 Promote each package from a task in the platform team's templates that opens a pull request with its digest in an environment's overlay when the [Pact Broker] confirms that it's compatible with every component deployed there.
-Promote it to the first environment after its image is signed and attested, and to each next environment after it passes smoke tests with [Playwright] in the current one and, in pre-production, a dynamic scan with [ZAP].
+Promote it to the first environment after its image is signed and attested, and to each next environment after it rolls out and passes smoke tests with [Playwright] in the current one and, in pre-production, a dynamic scan with [ZAP].
 Promote each imported image that an environment runs the same way, without the [Pact Broker] check.
 Record in the [Pact Broker] each version that runs in an environment, from the task that runs its smoke tests there, before they start.
-Roll back a package from the promotion task, as a promotion of the digest that the environment ran before, when its canary fails or when its owning team asks.
+Roll back a package from the promotion task, as a promotion of the digest that the environment ran before, when its rollout or smoke tests fail, or when its owning team asks.
 
 ### Verify promotions
 
-Verify on each pull request to an environment repository that only promotion commits change image digests, that the promotion task signed each of them, and that they change nothing else.
+Verify on each pull request to an environment repository that only promotion commits set or update image digests, that the promotion task signed each of them, and that they change nothing else.
 Verify that each new digest is one that the previous environment runs or that this environment ran before.
 In the first environment, verify instead that [Tekton Chains] signed it with SLSA provenance naming the main branch of its component's repository, or that the platform team's import pipeline signed it.
 Merge each promotion automatically without an approval when its required checks pass, in every environment including production.
