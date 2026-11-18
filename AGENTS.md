@@ -22,7 +22,7 @@ Each principle may link to one source that broadly supports it. Detailed referen
 
 ### Practices
 
-Practices apply the principles to one part of the model. Each practice consists of stages, and each stage consists of steps: the actions that the guide prefers to apply or follow. A step consists only of concrete actions, without reasons or outcomes. A step combines the actions that serve one purpose, so a stage has a few substantial steps rather than many small ones.
+Practices apply the principles to one part of the model. Each practice consists of stages, and each stage consists of steps: the actions that the guide prefers to apply or follow. A step consists only of concrete actions, without reasons or outcomes. A step combines the actions that serve one purpose, so a stage has a few substantial steps rather than many small ones. A practice opens with the foundations that every stage relies on, each a short declarative paragraph that ends with the trade-off of the simpler alternative.
 
 Practices balance a grounded path against readability. Keep a detail only if leaving it out would misdirect the reader, and leave mechanisms, edge cases, and hardening for the reader to work out.
 
