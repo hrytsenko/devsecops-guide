@@ -33,7 +33,7 @@ Static keys are faster to start with, but stay valid wherever they leak until so
 ### Permissions
 
 People and agents have read-only access to every environment.
-When a change can't wait for the pipeline, such as a quarantine or a mitigation, a person gets write access to the affected namespaces, nodes, or [Velociraptor] for a few hours through a group in the identity provider, on approval by another person from the team that owns them.
+When work can't wait for the pipeline, such as a quarantine, a forensic collection, or a mitigation, a person gets access for a few hours to what it needs, such as the affected namespaces and the pipeline's sync of them, the affected nodes, or [Velociraptor], through a group in the identity provider, on approval by another person from the team that owns them.
 Standing admin access is faster to start with, but lets one leaked credential change production.
 
 ### Signals
@@ -65,7 +65,7 @@ Run each agent, and each workload that runs code it didn't ship, in a [gVisor] s
 
 Enforce mutual TLS between all workloads with [Istio], and deny every call to a namespace by default with an [Istio] authorization policy.
 Allow the calls to each component with [Istio] authorization policies that name the [SPIFFE] identities of its consumers.
-Allow egress from each namespace only through an [Istio] egress gateway to the external hosts that its team declares in its environment repository, and block any other egress with [Kubernetes] network policies.
+Allow traffic out of the cluster from each namespace only through an [Istio] egress gateway to the external hosts that its team declares in its environment repository, and block any other traffic out of the cluster with [Kubernetes] network policies.
 Expose components to users only through an [Istio] ingress gateway.
 
 ## Observe
@@ -81,7 +81,7 @@ Label each signal in the [OpenTelemetry] collector with the team and component o
 
 ### Detect threats
 
-Run [Falco] on every node with the platform team's rules, and feed it the events of every [gVisor] sandbox and the audit logs.
+Run [Falco] with the platform team's rules on every node, including the events of its [gVisor] sandboxes, and in a separate instance on the audit logs.
 Store each [Falco] alert in [OpenSearch], and alert the on-call persons of the owning team and the platform team through [Alertmanager] on each critical one, such as a shell or a new executable in a running container, or a change to an environment from a person or an agent.
 
 ### Alert owners

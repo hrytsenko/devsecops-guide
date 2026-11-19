@@ -22,7 +22,7 @@ The principles apply to the pipelines themselves:
 
 - [Everything as code]: pipelines and their templates are manifests that change only through review, and the cluster runs them as the main branch declares.
 - [Shift left]: people and agents run the same checks as the pipeline before they push, so they see its verdict first.
-- [Zero trust]: each pipeline task uses short-lived credentials where possible, and runs under the same isolation as any other workload.
+- [Zero trust]: each pipeline task runs unprivileged under its own service account, with short-lived credentials where possible.
 - [Closed loop]: each team measures the throughput and stability of its delivery, and fixes its pipelines where delivery slows down or breaks.
 
 ## Foundations
@@ -41,19 +41,19 @@ Every check on a pull request is required, and each scanner reports its findings
 The rulesets of the checks decide which findings block a pull request or an image, and how long each finding can stay accepted (see [NIST SSDF]).
 The team that owns the repository a finding comes from fixes it, or accepts it there when it can't, such as when a third-party component has no fix yet.
 Only the platform team accepts admission findings, as [Kyverno] policy exceptions.
-Each acceptance records a reason, an owner, and a date, as an [OpenVEX] statement for a vulnerability that doesn't affect the component.
+Each acceptance records a reason, an owner, and a date, and an acceptance of a vulnerability that doesn't affect the component is an [OpenVEX] statement.
 Every check, including the image scan and the daily rescan, skips an accepted finding until it's older than its ruleset allows.
 Ignoring findings in each tool's own configuration is faster to start with, but leaves them without owners or time limits.
 
 ### Repositories
 
-Each team declares its part of every environment in its environment repository: infrastructure as [Crossplane] composite resources, components in [Kustomize] overlays, and feature flags in [flagd] definitions.
-The platform team declares the shared parts, such as [Kyverno] admission policies and [Crossplane] packages, in its own environment repository, and keeps in a shared repository the pipeline templates, compositions, agent skills, rulesets of every check, and the list of third-party images to import.
+Each team declares the resources of its pipelines and its part of every environment in its environment repository: pipeline resources and infrastructure as [Crossplane] composite resources, components in [Kustomize] overlays, and feature flags in [flagd] definitions.
+The platform team declares the shared parts, such as clusters, [Kyverno] admission policies, and [Crossplane] packages, in its own environment repository, and keeps in a shared repository the pipeline templates, compositions, agent skills, rulesets of every check, and the list of third-party images to import.
 Declaring environments in each component's repository is faster to start with, but every promotion then lands in the code's history and triggers its pipelines.
 
 ### Clusters
 
-Pipelines run on the organization's [Kubernetes] clusters, under the platform team's control: [Tekton] runs their tasks and checks, [Argo CD] syncs environments (see [OpenGitOps]), [Crossplane] provisions their infrastructure, and [Argo Rollouts] releases new versions in them.
+Pipelines and environments run on the organization's [Kubernetes] clusters, under the platform team's control: [Tekton] runs the tasks and checks of pipelines, [Argo CD] syncs both from their repositories (see [OpenGitOps]), [Crossplane] provisions their resources, and [Argo Rollouts] releases new versions in environments.
 This fits organizations that already run their environments on [Kubernetes].
 A hosted CI service is faster to start with and offers many ready-made steps, but gives less control as delivery grows.
 
@@ -117,14 +117,15 @@ It applies [Everything as code] and [Zero trust] and relies on [External configu
 
 ### Reconcile infrastructure
 
-Install the platform team's compositions in each environment as [Crossplane] packages, together with the providers and functions that they use, each pinned by digest.
-Declare the infrastructure of each component in each environment, such as its databases and queues, as [Crossplane] composite resources, and sync them with [Argo CD].
+Install the platform team's compositions as [Crossplane] packages in the pipeline clusters and in each environment, together with the providers and functions that they use, each pinned by digest.
+Declare the infrastructure of each component in each environment, such as its databases and caches, as [Crossplane] composite resources, and sync them with [Argo CD].
 Reconcile the resources that they compose with [Crossplane] in each environment's own clusters, under credentials for that environment's cloud accounts only.
+Sync each component's pipeline resources and each environment's clusters with [Argo CD] the same way, and reconcile them with [Crossplane] in the pipeline clusters.
 
 ### Reconcile environments
 
 Declare each component's image digest and environment-specific configuration for each environment in a [Kustomize] overlay, and sync the overlays and [flagd] definitions with [Argo CD] with automated pruning and self-healing.
-Restrict each team's [Argo CD] project to the team's own namespaces, and allow cluster-scoped resources and [Kyverno] policy exceptions only in the platform team's project.
+Restrict each team's [Argo CD] project to the team's own namespaces and deny it the managed resources of [Crossplane] providers, and allow cluster-scoped resources and [Kyverno] policy exceptions only in the platform team's project.
 Sync secrets into each environment from the organization's secret store with [ESO], and keep them out of every environment repository.
 Enforce the platform team's admission policies in each environment with [Kyverno], and admit only images from the organization's [Harbor] that are referenced by digest and attested with an SBOM, and either signed by the [Tekton] chains controller with [SLSA] provenance that names their source repository, or signed by the platform team's import pipeline.
 
@@ -132,7 +133,7 @@ Enforce the platform team's admission policies in each environment with [Kyverno
 
 The promote stage moves each verified package through environments to production.
 
-It applies [Zero trust] and relies on [Portable package] and [Explicit interface]: the same image moves from one environment to the next only through verified promotions, and a component's image enters each only when it's compatible with every component deployed there.
+It applies [Zero trust] and [Closed loop] and relies on [Portable package] and [Explicit interface]: the same image moves from one environment to the next only through verified promotions, a component's image enters each only when it's compatible with every component deployed there, and a failed rollout returns to the image that the environment ran before.
 
 ### Promote images
 
@@ -215,6 +216,10 @@ Image tools:
 - [Grype][]: vulnerability scanner.
 - [Syft][]: SBOM generator.
 - [Cosign][]: image signing tool.
+
+Platform tools:
+
+- [Crossplane][]: infrastructure control plane.
 - [Harbor][]: image registry.
 
 Pipeline tools:
@@ -224,7 +229,6 @@ Pipeline tools:
 - [Argo CD][]: GitOps controller.
 - [Argo Rollouts][]: delivery controller.
 - [Kustomize][]: configuration overlays.
-- [Crossplane][]: infrastructure control plane.
 - [Playwright][]: smoke testing tool.
 - [ZAP][]: dynamic application scanner.
 
@@ -235,6 +239,9 @@ Environment tools:
 - [Kyverno][]: policy engine.
 - [ESO][]: external secrets manager.
 - [flagd][]: feature flag service.
+
+Telemetry tools:
+
 - [Prometheus][]: metrics store.
 
 [Closed loop]: ../../principles/devsecops/#closed-loop
@@ -277,6 +284,8 @@ Environment tools:
 [Grype]: https://github.com/anchore/grype
 [Syft]: https://github.com/anchore/syft
 [Cosign]: https://github.com/sigstore/cosign
+
+[Crossplane]: https://www.crossplane.io/
 [Harbor]: https://goharbor.io/
 
 [Tekton]: https://tekton.dev/
@@ -284,7 +293,6 @@ Environment tools:
 [Argo CD]: https://argo-cd.readthedocs.io/
 [Argo Rollouts]: https://argo-rollouts.readthedocs.io/
 [Kustomize]: https://kustomize.io/
-[Crossplane]: https://www.crossplane.io/
 [Playwright]: https://playwright.dev/
 [ZAP]: https://www.zaproxy.org/
 
@@ -293,4 +301,5 @@ Environment tools:
 [Kyverno]: https://kyverno.io/
 [ESO]: https://external-secrets.io/
 [flagd]: https://flagd.dev/
+
 [Prometheus]: https://prometheus.io/

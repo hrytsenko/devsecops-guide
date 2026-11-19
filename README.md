@@ -13,6 +13,7 @@ src/content/docs/
   practices/         # principles applied to the model
     pipelines.md     # from commit to release
     environments.md  # from isolation to recovery
+    platform.md      # from offering to evolution
 ```
 
 ## Develop
