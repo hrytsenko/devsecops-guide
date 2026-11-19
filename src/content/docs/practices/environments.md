@@ -38,7 +38,7 @@ Standing admin access is faster to start with, but lets one leaked credential ch
 
 ### Signals
 
-Every component and cluster sends its logs, metrics, and traces through the [OpenTelemetry Collector] of its cluster, which exports metrics to [Prometheus], traces to [Jaeger], and logs to [OpenSearch].
+Every component and cluster sends its logs, metrics, and traces through the [OpenTelemetry] collector of its cluster, which exports metrics to [Prometheus], traces to [Jaeger], and logs to [OpenSearch].
 [Alertmanager] routes each alert to the team that owns the namespace it comes from.
 People and agents read every signal through [OpenID Connect] with the organization's identity provider.
 Sending signals from each component straight to its backends is faster to start with, but leaves each team to label, filter, and route them on its own.
@@ -46,7 +46,7 @@ Sending signals from each component straight to its backends is faster to start 
 ### Clusters
 
 Each environment runs on [Kubernetes] clusters of its own, apart from the clusters that run pipelines and the platform's shared services, such as the signal backends.
-The platform team runs [Istio], [Falco], [Velociraptor], and the [OpenTelemetry Collector] in every one of these clusters, [Velero] in each environment's clusters, and [Chaos Mesh] in the pre-production clusters.
+The platform team runs [Istio], [Falco], [Velociraptor], and the [OpenTelemetry] collector in every one of these clusters, [Velero] in each environment's clusters, and [Chaos Mesh] in the pre-production clusters.
 Sharing clusters between environments is faster to start with, but lets a failure or a compromise in one environment reach production.
 
 ## Isolate
@@ -58,14 +58,14 @@ It applies [Zero trust] and relies on [External configuration] and [Explicit int
 ### Harden workloads
 
 Run each component in a namespace of its own in every environment, label the namespace with its team and component, and limit its resources with a resource quota.
-Run the pods of every component under the restricted profile of the Pod Security Standards, and only the platform team's node daemons, such as [Falco], the [OpenTelemetry Collector], and the Istio CNI agent, outside it.
-Run each agent, and each workload that runs code it didn't ship, in a [gVisor] sandbox through a Kubernetes runtime class.
+Run the pods of every component under the restricted profile of the [Kubernetes] pod security standards, and only the platform team's node daemons, such as [Falco], the [OpenTelemetry] collector, and the [Istio] CNI agent, outside it.
+Run each agent, and each workload that runs code it didn't ship, in a [gVisor] sandbox through a [Kubernetes] runtime class.
 
 ### Restrict traffic
 
 Enforce mutual TLS between all workloads with [Istio], and deny every call to a namespace by default with an [Istio] authorization policy.
 Allow the calls to each component with [Istio] authorization policies that name the [SPIFFE] identities of its consumers.
-Allow egress from each namespace only through an [Istio] egress gateway to the external hosts that its team declares in its environment repository, and block any other egress with Kubernetes network policies.
+Allow egress from each namespace only through an [Istio] egress gateway to the external hosts that its team declares in its environment repository, and block any other egress with [Kubernetes] network policies.
 Expose components to users only through an [Istio] ingress gateway.
 
 ## Observe
@@ -76,8 +76,8 @@ It applies [Closed loop] and [Zero trust] and relies on [Portable package] and [
 
 ### Collect signals
 
-Collect with the [OpenTelemetry Collector] the logs of every container, the metrics of every node and Kubernetes component, and the audit logs of every cluster and cloud account, and receive in it the signals that each component sends through [OpenTelemetry].
-Label each signal in the Collector with the team and component of its namespace, the version of its pod, and the environment of its cluster.
+Collect with the [OpenTelemetry] collector the logs of every container, the metrics of every node and [Kubernetes] component, and the audit logs of every cluster and cloud account, and receive in it the signals that each component sends through [OpenTelemetry].
+Label each signal in the [OpenTelemetry] collector with the team and component of its namespace, the version of its pod, and the environment of its cluster.
 
 ### Detect threats
 
@@ -160,7 +160,6 @@ Environment tools:
 
 Telemetry tools:
 
-- [OpenTelemetry Collector][]: telemetry pipeline.
 - [Prometheus][]: metrics store.
 - [Alertmanager][]: alert router.
 - [Jaeger][]: trace store.
@@ -195,7 +194,6 @@ Incident tools:
 [Velero]: https://velero.io/
 [Chaos Mesh]: https://chaos-mesh.org/
 
-[OpenTelemetry Collector]: https://opentelemetry.io/docs/collector/
 [Prometheus]: https://prometheus.io/
 [Alertmanager]: https://prometheus.io/docs/alerting/latest/alertmanager/
 [Jaeger]: https://www.jaegertracing.io/

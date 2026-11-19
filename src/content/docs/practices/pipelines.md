@@ -30,10 +30,10 @@ The principles apply to the pipelines themselves:
 ### Identities
 
 People and agents prove their identities through [OpenID Connect] with the organization's identity provider, and [Tekton] tasks with their service accounts, to get short-lived credentials.
-[Gitsign], [Cosign], and [Tekton Chains] sign with certificates for those identities from the organization's [Sigstore] instance.
+[Gitsign], [Cosign], and the [Tekton] chains controller sign with certificates for those identities from the organization's [Sigstore] instance.
 Every person, agent, and task signs each commit it makes with [Gitsign], and a check verifies each commit in a pull request against the identity of its author.
-Each image comes from one of two pipelines: a component's pipeline builds it and [Tekton Chains] signs it, or the platform team's import pipeline verifies a third-party image and signs it with [Cosign].
-The public Sigstore instance is faster to start with, but records the identity of every signer in a public transparency log.
+Each image comes from one of two pipelines: a component's pipeline builds it and the [Tekton] chains controller signs it, or the platform team's import pipeline verifies a third-party image and signs it with [Cosign].
+The public [Sigstore] instance is faster to start with, but records the identity of every signer in a public transparency log.
 
 ### Findings
 
@@ -54,7 +54,7 @@ Declaring environments in each component's repository is faster to start with, b
 ### Clusters
 
 Pipelines run on the organization's [Kubernetes] clusters, under the platform team's control: [Tekton] runs their tasks and checks, [Argo CD] syncs environments (see [OpenGitOps]), and [Argo Rollouts] releases new versions in them.
-This fits organizations that already run their environments on Kubernetes.
+This fits organizations that already run their environments on [Kubernetes].
 A hosted CI service is faster to start with and offers many ready-made steps, but gives less control as delivery grows.
 
 ## Merge
@@ -82,9 +82,9 @@ Review each change with an agent that loads instructions from the [AGENTS.md] fi
 ### Test changes
 
 Build each change and run its tests.
-Define what each consumer expects from the components it calls as [Pact] contracts in its tests, and publish them from each change to the [Pact Broker].
-Verify each provider change against the contracts from its consumers' main branches and from every version deployed in an environment, and publish the results to the [Pact Broker].
-Verify the provider's main branch against each changed contract from a [Pact Broker] webhook, and block the consumer's change until the verification passes.
+Define what each consumer expects from the components it calls as [Pact] contracts in its tests, and publish them from each change to the [Pact] broker.
+Verify each provider change against the contracts from its consumers' main branches and from every version deployed in an environment, and publish the results to the [Pact] broker.
+Verify the provider's main branch against each changed contract from a [Pact] broker webhook, and block the consumer's change until the verification passes.
 
 ## Build
 
@@ -97,14 +97,14 @@ It applies [Zero trust] and relies on [Portable package]: every later stage veri
 Build each merged change into an [OCI] image with [Buildah] from a [Distroless] base image pinned by digest, in an unprivileged task from the platform team's templates.
 Generate an SBOM of each image with [Syft] in [SPDX] format, and scan it with [Grype] before pushing the image.
 Attest each image's SBOM with [Cosign] in another task from those templates, with its own service account.
-Sign each image and attest its [SLSA] provenance in [in-toto] format with [Tekton Chains].
+Sign each image and attest its [SLSA] provenance in [in-toto] format with the [Tekton] chains controller.
 
 ### Store images
 
 Store each image with its signatures, SBOM, and provenance in [Harbor].
-Grant push access to a component's Harbor project only to that component's pipeline, and pull access only to environments and to the tasks that verify or rescan its images, through Harbor robot accounts.
-Import each third-party image, such as a base image or a platform component, by digest through a Harbor proxy cache, in a pipeline of the platform team that verifies its publisher's signature with [Cosign] where the publisher signs it.
-Generate, scan, and attest an SBOM of each imported image as for the organization's own images, sign it with [Cosign], store it in a Harbor project of the platform team, and pull it in builds and environments only from there.
+Grant push access to a component's [Harbor] project only to that component's pipeline, and pull access only to environments and to the tasks that verify or rescan its images, through [Harbor] robot accounts.
+Import each third-party image, such as a base image or a platform component, by digest through a [Harbor] proxy cache, in a pipeline of the platform team that verifies its publisher's signature with [Cosign] where the publisher signs it.
+Generate, scan, and attest an SBOM of each imported image as for the organization's own images, sign it with [Cosign], store it in a [Harbor] project of the platform team, and pull it in builds and environments only from there.
 Rescan daily with [Grype] the SBOM of each image that an environment repository declares, and for each new finding that the shared rulesets block, open an issue in the repository that the image comes from.
 
 ## Deploy
@@ -127,7 +127,7 @@ Hold any apply that would destroy or replace a resource until a person from the 
 Declare each component's image digest and environment-specific configuration for each environment in a [Kustomize] overlay, and sync the overlays and [flagd] definitions with [Argo CD] with automated pruning and self-healing.
 Restrict each team's [Argo CD] project to the team's own namespaces, and allow cluster-scoped resources and [Kyverno] policy exceptions only in the platform team's project.
 Sync secrets into each environment from the organization's secret store with [ESO], and keep them out of every environment repository.
-Enforce the platform team's admission policies in each environment with [Kyverno], and admit only images from the organization's [Harbor] that are referenced by digest and attested with an SBOM, and either signed by [Tekton Chains] with SLSA provenance that names their component's repository, or signed by the platform team's import pipeline.
+Enforce the platform team's admission policies in each environment with [Kyverno], and admit only images from the organization's [Harbor] that are referenced by digest and attested with an SBOM, and either signed by the [Tekton] chains controller with [SLSA] provenance that names their component's repository, or signed by the platform team's import pipeline.
 
 ## Promote
 
@@ -137,17 +137,17 @@ It applies [Zero trust] and relies on [Portable package] and [Explicit interface
 
 ### Promote images
 
-Promote each image from a task in the platform team's templates that opens a pull request with its digest in an environment's overlay when the [Pact Broker] confirms that it's compatible with every component deployed there.
+Promote each image from a task in the platform team's templates that opens a pull request with its digest in an environment's overlay when the [Pact] broker confirms that it's compatible with every component deployed there.
 Promote it to the first environment after it's signed and attested, and to each next environment after it rolls out and passes smoke tests with [Playwright] in the current one and, in pre-production, a dynamic scan with [ZAP].
-Promote each imported image that an environment runs the same way, without the [Pact Broker] check.
-Record in the [Pact Broker] each version that runs in an environment, from the task that runs its smoke tests there, before they start.
+Promote each imported image that an environment runs the same way, without the [Pact] broker check.
+Record in the [Pact] broker each version that runs in an environment, from the task that runs its smoke tests there, before they start.
 Roll back an image from the promotion task, as a promotion of the digest that the environment ran before, when its rollout or smoke tests fail, or when its owning team asks.
 
 ### Verify promotions
 
 Verify on each pull request to an environment repository that only promotion commits set or update image digests or module versions, that a promotion task signed each of them with [Gitsign], and that they change nothing else.
 Verify that each new digest or module version is one that the previous environment runs or that this environment ran before.
-In the first environment, verify instead with [Cosign] that [Tekton Chains] signed it with SLSA provenance naming the main branch of its component's repository, or that the platform team's import pipeline signed it.
+In the first environment, verify instead with [Cosign] that the [Tekton] chains controller signed it with [SLSA] provenance naming the main branch of its component's repository, or that the platform team's import pipeline signed it.
 Merge each promotion automatically without an approval when its required checks pass, in every environment including production.
 
 ## Release
@@ -222,13 +222,11 @@ Image tools:
 Pipeline tools:
 
 - [Tekton][]: pipeline engine.
-- [Tekton Chains][]: provenance controller.
 - [Sigstore][]: keyless signing toolkit.
 - [Argo CD][]: GitOps controller.
 - [Argo Rollouts][]: delivery controller.
 - [Kustomize][]: configuration overlays.
 - [OpenTofu][]: IaC toolkit.
-- [Pact Broker][]: contract registry.
 - [Playwright][]: smoke testing tool.
 - [ZAP][]: dynamic application scanner.
 
@@ -285,13 +283,11 @@ Environment tools:
 [Harbor]: https://goharbor.io/
 
 [Tekton]: https://tekton.dev/
-[Tekton Chains]: https://tekton.dev/docs/chains/
 [Sigstore]: https://www.sigstore.dev/
 [Argo CD]: https://argo-cd.readthedocs.io/
 [Argo Rollouts]: https://argo-rollouts.readthedocs.io/
 [Kustomize]: https://kustomize.io/
 [OpenTofu]: https://opentofu.org/
-[Pact Broker]: https://docs.pact.io/pact_broker
 [Playwright]: https://playwright.dev/
 [ZAP]: https://www.zaproxy.org/
 

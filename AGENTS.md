@@ -33,3 +33,5 @@ Practices balance a grounded path against readability. Keep a detail only if lea
 ### Sources
 
 Name and link only industry-wide FOSS tools, open standards, frameworks, and guides. A framework or guide qualifies when an organization, such as a standards body, a foundation, or a company, publishes it openly and maintains it. Don't link to guides or blogs of individual authors, or to marketing content, however well known they are.
+
+When you name a feature, resource, or subproject together with its tool, link the tool and write the rest in prose, such as [Istio] CNI agent, [Tekton] chains controller, or [Kubernetes] network policies. A subproject with a name of its own, such as Alertmanager in Prometheus or Cosign in Sigstore, keeps its own link.

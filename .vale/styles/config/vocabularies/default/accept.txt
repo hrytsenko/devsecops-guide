@@ -10,6 +10,7 @@ HolmesGPT
 [Rr]escan
 Semgrep
 Sigstore
+[Ss]ubproject
 Syft
 Tekton
 Timesketch
