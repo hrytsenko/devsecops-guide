@@ -10,7 +10,7 @@ The guide is for senior engineers and above who build DevSecOps in their organiz
 
 ### Model
 
-The guide builds on one model of delivery. Teams own components and their changes. Teams consist of people and agents, who make and review changes under the same controls. Teams deliver components through pipelines, which deploy them to environments. Pipelines and environments run on infrastructure, which consists of resources.
+The guide builds on one model of delivery. Teams consist of people and agents, who make and review changes under the same controls. Each team owns its components and their changes, and delivers them through pipelines, which deploy them to environments. The platform team owns the platform, which provides pipelines and environments to every team and runs them on shared infrastructure.
 
 ### Principles
 
