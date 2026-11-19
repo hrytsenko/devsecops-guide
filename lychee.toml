@@ -1,4 +1,2 @@
 # Check web links only.
 scheme = ["https", "http"]
-# Resolve root-relative links.
-root_dir = "/"
