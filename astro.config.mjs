@@ -11,7 +11,7 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'DevSecOps Guide',
-			description: 'An opinionated guide to DevSecOps.',
+			description: 'An opinionated guide for senior engineers who build DevSecOps in their organizations.',
 			social: [{ icon: 'github', label: 'GitHub', href: repo }],
 			customCss: ['./src/styles/custom.css'],
 			sidebar: [

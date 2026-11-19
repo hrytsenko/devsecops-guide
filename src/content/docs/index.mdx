@@ -3,18 +3,47 @@ title: Home
 template: splash
 hero:
   title: DevSecOps Guide
-  tagline: An opinionated guide to DevSecOps.
+  tagline: An opinionated guide for senior engineers who build DevSecOps in their organizations.
 ---
 
-The guide is for senior engineers who build DevSecOps in their organizations.
+import { LinkCard } from '@astrojs/starlight/components';
 
-Start with the principles:
+## Model
 
-- [DevSecOps principles](principles/devsecops/)
-- [Cloud native principles](principles/cloud-native/)
+Teams consist of people and agents, who work under the same controls and make and review changes interchangeably, unless a control requires a person.
+Teams deploy continuously: once a change merges, only automated checks stand between it and production.
 
-Then see how they apply in practice:
+Each team owns its components and their changes, and delivers them through pipelines, which deploy them to environments.
+The platform team owns the platform, which provides pipelines, environments, and backing services to every team.
+It runs pipelines and environments on Kubernetes clusters that all teams share.
 
-- [Pipelines](practices/pipelines/)
-- [Environments](practices/environments/)
-- [Platform](practices/platform/)
+## Principles
+
+<LinkCard
+  title="DevSecOps principles"
+  description="Ship fast and safely with shared ownership and automation at every stage."
+  href="principles/devsecops/"
+/>
+<LinkCard
+  title="Cloud native principles"
+  description="Scale delivery with components that pipelines deliver and environments run the same way."
+  href="principles/cloud-native/"
+/>
+
+## Practices
+
+<LinkCard
+  title="Pipelines"
+  description="Move each change from commit to production through one automated path."
+  href="practices/pipelines/"
+/>
+<LinkCard
+  title="Environments"
+  description="Run each component isolated, observed, and recoverable in every environment."
+  href="practices/environments/"
+/>
+<LinkCard
+  title="Platform"
+  description="Offer each team self-service capabilities with their controls built in."
+  href="practices/platform/"
+/>

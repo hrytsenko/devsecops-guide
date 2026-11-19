@@ -27,7 +27,7 @@ Explicit interfaces let teams test contracts, enforce access policies at the bou
 
 ## External state
 
-Each component keeps persistent and shared state in backing services that the environment provides.
+Each component keeps persistent and shared state in backing services that the platform provides.
 Instances start fast and shut down gracefully, so the environment can scale, update, and replace them at any time without losing work.
 
 ## Built-in telemetry

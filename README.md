@@ -1,6 +1,6 @@
 # DevSecOps Guide
 
-An opinionated guide to DevSecOps.
+An opinionated guide for senior engineers who build DevSecOps in their organizations.
 
 Published at [DevSecOps Guide](https://hrytsenko.github.io/devsecops-guide/).
 
@@ -8,9 +8,11 @@ Published at [DevSecOps Guide](https://hrytsenko.github.io/devsecops-guide/).
 
 ```text
 src/content/docs/
-  index.mdx          # home
-  principles/        # grounding principles
-  practices/         # principles applied to the model
+  index.mdx          # delivery model that every page follows
+  principles/        # what every practice rests on
+    devsecops.md     # how teams deliver and run software
+    cloud-native.md  # what a component does so the platform can run it
+  practices/         # stages of concrete steps that rely on the principles
     pipelines.md     # from commit to release
     environments.md  # from isolation to recovery
     platform.md      # from offering to evolution

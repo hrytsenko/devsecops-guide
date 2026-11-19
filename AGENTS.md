@@ -10,7 +10,7 @@ The guide is for senior engineers and above who build DevSecOps in their organiz
 
 ### Model
 
-The guide builds on one model of delivery. Teams consist of people and agents, who make and review changes under the same controls. Each team owns its components and their changes, and delivers them through pipelines, which deploy them to environments. The platform team owns the platform, which provides pipelines and environments to every team and runs them on shared infrastructure.
+The [home page](src/content/docs/index.mdx) describes the model of delivery that grounds the guide. Use its terms on every page and keep every page consistent with it. When content needs something the model doesn't allow, change the model rather than work around it.
 
 ### Principles
 

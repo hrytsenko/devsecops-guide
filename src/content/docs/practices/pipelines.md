@@ -54,7 +54,6 @@ Declaring environments in each component's repository is faster to start with, b
 ### Clusters
 
 Pipelines and environments run on the organization's [Kubernetes] clusters, under the platform team's control: [Tekton] runs the tasks and checks of pipelines, [Argo CD] syncs both from their repositories (see [OpenGitOps]), [Crossplane] provisions their resources, and [Argo Rollouts] releases new versions in environments.
-This fits organizations that already run their environments on [Kubernetes].
 A hosted CI service is faster to start with and offers many ready-made steps, but gives less control as delivery grows.
 
 ## Merge
