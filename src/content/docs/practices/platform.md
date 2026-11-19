@@ -115,13 +115,13 @@ Pipeline tools:
 
 - [Tekton][]: pipeline engine.
 - [Argo CD][]: GitOps controller.
-- [Kustomize][]: configuration overlays.
+- [Kustomize][]: configuration overlay tool.
 
 Environment tools:
 
 - [Kubernetes][]: orchestration platform.
 - [Kyverno][]: policy engine.
-- [Policy Reporter][]: policy report viewer.
+- [Policy Reporter][]: policy report notifier.
 
 [Self-service]: ../../principles/devsecops/#self-service
 [Zero trust]: ../../principles/devsecops/#zero-trust

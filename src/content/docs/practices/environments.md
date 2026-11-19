@@ -167,9 +167,9 @@ Telemetry tools:
 
 Incident tools:
 
+- [HolmesGPT][]: incident analysis agent.
 - [Velociraptor][]: forensic artifact collector.
 - [Timesketch][]: forensic timeline analyzer.
-- [HolmesGPT][]: incident analysis agent.
 
 [Zero trust]: ../../principles/devsecops/#zero-trust
 [Closed loop]: ../../principles/devsecops/#closed-loop
@@ -199,6 +199,6 @@ Incident tools:
 [Jaeger]: https://www.jaegertracing.io/
 [OpenSearch]: https://opensearch.org/
 
+[HolmesGPT]: https://github.com/HolmesGPT/holmesgpt
 [Velociraptor]: https://docs.velociraptor.app/
 [Timesketch]: https://timesketch.org/
-[HolmesGPT]: https://github.com/HolmesGPT/holmesgpt

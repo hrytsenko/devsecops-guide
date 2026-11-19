@@ -228,7 +228,7 @@ Pipeline tools:
 - [Sigstore][]: keyless signing toolkit.
 - [Argo CD][]: GitOps controller.
 - [Argo Rollouts][]: delivery controller.
-- [Kustomize][]: configuration overlays.
+- [Kustomize][]: configuration overlay tool.
 - [Playwright][]: smoke testing tool.
 - [ZAP][]: dynamic application scanner.
 
@@ -237,7 +237,7 @@ Environment tools:
 - [Kubernetes][]: orchestration platform.
 - [Istio][]: service mesh.
 - [Kyverno][]: policy engine.
-- [ESO][]: external secrets manager.
+- [ESO][]: secret sync controller.
 - [flagd][]: feature flag service.
 
 Telemetry tools:
