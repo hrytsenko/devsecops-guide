@@ -32,7 +32,7 @@ The principles apply to the pipelines themselves:
 People and agents prove their identities through [OpenID Connect] with the organization's identity provider, and [Tekton] tasks with their service accounts, to get short-lived credentials.
 [Gitsign], [Cosign], and the [Tekton] chains controller sign with certificates for those identities from the organization's [Sigstore] instance.
 Every person, agent, and task signs each commit it makes with [Gitsign], and a check verifies each commit in a pull request against the identity of its author.
-Each image comes from one of two pipelines: a component's pipeline builds it and the [Tekton] chains controller signs it, or the platform team's import pipeline verifies a third-party image and signs it with [Cosign].
+Each image comes from one of two pipelines: a pipeline builds it from its source repository and the [Tekton] chains controller signs it, or the platform team's import pipeline verifies a third-party image and signs it with [Cosign].
 The public [Sigstore] instance is faster to start with, but records the identity of every signer in a public transparency log.
 
 ### Findings
@@ -47,13 +47,13 @@ Ignoring findings in each tool's own configuration is faster to start with, but 
 
 ### Repositories
 
-Each team declares its part of every environment in its environment repository: infrastructure in [OpenTofu], components in [Kustomize] overlays, and feature flags in [flagd] definitions.
-The platform team declares the shared parts, such as [Kyverno] admission policies, in its own environment repository, and keeps in a shared repository the pipeline templates, agent skills, rulesets of every check, and the list of third-party images to import.
+Each team declares its part of every environment in its environment repository: infrastructure as [Crossplane] composite resources, components in [Kustomize] overlays, and feature flags in [flagd] definitions.
+The platform team declares the shared parts, such as [Kyverno] admission policies and [Crossplane] packages, in its own environment repository, and keeps in a shared repository the pipeline templates, compositions, agent skills, rulesets of every check, and the list of third-party images to import.
 Declaring environments in each component's repository is faster to start with, but every promotion then lands in the code's history and triggers its pipelines.
 
 ### Clusters
 
-Pipelines run on the organization's [Kubernetes] clusters, under the platform team's control: [Tekton] runs their tasks and checks, [Argo CD] syncs environments (see [OpenGitOps]), and [Argo Rollouts] releases new versions in them.
+Pipelines run on the organization's [Kubernetes] clusters, under the platform team's control: [Tekton] runs their tasks and checks, [Argo CD] syncs environments (see [OpenGitOps]), [Crossplane] provisions their infrastructure, and [Argo Rollouts] releases new versions in them.
 This fits organizations that already run their environments on [Kubernetes].
 A hosted CI service is faster to start with and offers many ready-made steps, but gives less control as delivery grows.
 
@@ -68,15 +68,16 @@ It applies [Shift left] and [Zero trust] and relies on [Explicit interface]: eac
 Merge small changes into the main branch at least daily, and keep unfinished functionality behind feature flags.
 Run in [pre-commit] hooks every check that analyzes changes in the pipeline, with the same rulesets.
 Protect the main branch: require a pull request and the required pipeline checks, and block direct and force pushes.
-Require an approval from a person or an agent other than the author on every pull request except those that promote an image or a module version to an environment.
-Assign reviewers by path in a code owners file, and require a person from the owning team to approve changes to sensitive paths, such as pipeline templates, policies, and accepted findings.
+Require an approval from a person or an agent other than the author on every pull request except those that promote an image to an environment.
+Assign reviewers by path in a code owners file, and require a person from the owning team to approve changes to sensitive paths, such as pipeline templates, policies, compositions, composite resources, and accepted findings.
 Pin dependencies in lock files, base images by digest, and [Tekton] tasks and tools by version, and open update pull requests for each of them with [Renovate].
 
 ### Analyze changes
 
 Scan each change for credentials with [Gitleaks].
 Run static analysis on source code with [Semgrep], scan dependencies with [Grype], and lint Dockerfiles with [Hadolint].
-Scan [OpenTofu] code with [Trivy] for infrastructure misconfigurations, and validate [Kubernetes] manifests with the [Kyverno] CLI against the environments' admission policies.
+Render with the [Crossplane] CLI the resources that each changed composite resource or composition composes, and post them as a pull request comment.
+Validate [Kubernetes] manifests, including the rendered resources, with the [Kyverno] CLI against the environments' admission policies.
 Review each change with an agent that loads instructions from the [AGENTS.md] files of the main branch and [Agent Skills] from the shared repository, and post its findings as pull request comments.
 
 ### Test changes
@@ -94,7 +95,8 @@ It applies [Zero trust] and relies on [Portable package]: every later stage veri
 
 ### Build images
 
-Build each merged change into an [OCI] image with [Buildah] from a [Distroless] base image pinned by digest, in an unprivileged task from the platform team's templates.
+Build each merged change to a component into an [OCI] image with [Buildah] from a [Distroless] base image pinned by digest, in an unprivileged task from the platform team's templates.
+Build each merged change to the platform team's compositions into a [Crossplane] package with the [Crossplane] CLI, as an [OCI] image in the same kind of task.
 Generate an SBOM of each image with [Syft] in [SPDX] format, and scan it with [Grype] before pushing the image.
 Attest each image's SBOM with [Cosign] in another task from those templates, with its own service account.
 Sign each image and attest its [SLSA] provenance in [in-toto] format with the [Tekton] chains controller.
@@ -115,19 +117,16 @@ It applies [Everything as code] and [Zero trust] and relies on [External configu
 
 ### Reconcile infrastructure
 
-Write reusable [OpenTofu] modules in a repository of the owning team, and release each merged change to them as a new version.
-Declare the resources of each environment in an [OpenTofu] configuration, pin its modules by version, and encrypt its state with [OpenTofu] state encryption.
-Plan each change for every environment that it affects from a task with read-only credentials, and post each plan as a pull request comment.
-Apply each merged change from a task, and reapply every environment daily.
-Promote each module version from a task that opens a pull request with it: to the first environment after it's released, and to each next environment after it applies in the current one.
-Hold any apply that would destroy or replace a resource until a person from the owning team approves it.
+Install the platform team's compositions in each environment as [Crossplane] packages, together with the providers and functions that they use, each pinned by digest.
+Declare the infrastructure of each component in each environment, such as its databases and queues, as [Crossplane] composite resources, and sync them with [Argo CD].
+Reconcile the resources that they compose with [Crossplane] in each environment's own clusters, under credentials for that environment's cloud accounts only.
 
 ### Reconcile environments
 
 Declare each component's image digest and environment-specific configuration for each environment in a [Kustomize] overlay, and sync the overlays and [flagd] definitions with [Argo CD] with automated pruning and self-healing.
 Restrict each team's [Argo CD] project to the team's own namespaces, and allow cluster-scoped resources and [Kyverno] policy exceptions only in the platform team's project.
 Sync secrets into each environment from the organization's secret store with [ESO], and keep them out of every environment repository.
-Enforce the platform team's admission policies in each environment with [Kyverno], and admit only images from the organization's [Harbor] that are referenced by digest and attested with an SBOM, and either signed by the [Tekton] chains controller with [SLSA] provenance that names their component's repository, or signed by the platform team's import pipeline.
+Enforce the platform team's admission policies in each environment with [Kyverno], and admit only images from the organization's [Harbor] that are referenced by digest and attested with an SBOM, and either signed by the [Tekton] chains controller with [SLSA] provenance that names their source repository, or signed by the platform team's import pipeline.
 
 ## Promote
 
@@ -139,15 +138,15 @@ It applies [Zero trust] and relies on [Portable package] and [Explicit interface
 
 Promote each image from a task in the platform team's templates that opens a pull request with its digest in an environment's overlay when the [Pact] broker confirms that it's compatible with every component deployed there.
 Promote it to the first environment after it's signed and attested, and to each next environment after it rolls out and passes smoke tests with [Playwright] in the current one and, in pre-production, a dynamic scan with [ZAP].
-Promote each imported image that an environment runs the same way, without the [Pact] broker check.
+Promote each imported image and each [Crossplane] package that an environment runs the same way, without the [Pact] broker check.
 Record in the [Pact] broker each version that runs in an environment, from the task that runs its smoke tests there, before they start.
 Roll back an image from the promotion task, as a promotion of the digest that the environment ran before, when its rollout or smoke tests fail, or when its owning team asks.
 
 ### Verify promotions
 
-Verify on each pull request to an environment repository that only promotion commits set or update image digests or module versions, that a promotion task signed each of them with [Gitsign], and that they change nothing else.
-Verify that each new digest or module version is one that the previous environment runs or that this environment ran before.
-In the first environment, verify instead with [Cosign] that the [Tekton] chains controller signed it with [SLSA] provenance naming the main branch of its component's repository, or that the platform team's import pipeline signed it.
+Verify on each pull request to an environment repository that only promotion commits set or update image digests, that a promotion task signed each of them with [Gitsign], and that they change nothing else.
+Verify that each new digest is one that the previous environment runs or that this environment ran before.
+In the first environment, verify instead with [Cosign] that the [Tekton] chains controller signed it with [SLSA] provenance naming the main branch of its source repository, or that the platform team's import pipeline signed it.
 Merge each promotion automatically without an approval when its required checks pass, in every environment including production.
 
 ## Release
@@ -204,7 +203,6 @@ Code tools:
 - [pre-commit][]: commit hook framework.
 - [Gitleaks][]: credential scanner.
 - [Semgrep][]: static analysis tool.
-- [Trivy][]: misconfiguration scanner.
 - [Renovate][]: dependency update bot.
 - [Gitsign][]: commit signing tool.
 - [Pact][]: contract testing tool.
@@ -226,7 +224,7 @@ Pipeline tools:
 - [Argo CD][]: GitOps controller.
 - [Argo Rollouts][]: delivery controller.
 - [Kustomize][]: configuration overlays.
-- [OpenTofu][]: IaC toolkit.
+- [Crossplane][]: infrastructure control plane.
 - [Playwright][]: smoke testing tool.
 - [ZAP][]: dynamic application scanner.
 
@@ -269,7 +267,6 @@ Environment tools:
 [pre-commit]: https://pre-commit.com/
 [Gitleaks]: https://github.com/gitleaks/gitleaks
 [Semgrep]: https://github.com/semgrep/semgrep
-[Trivy]: https://trivy.dev/
 [Renovate]: https://github.com/renovatebot/renovate
 [Gitsign]: https://github.com/sigstore/gitsign
 [Pact]: https://docs.pact.io/
@@ -287,7 +284,7 @@ Environment tools:
 [Argo CD]: https://argo-cd.readthedocs.io/
 [Argo Rollouts]: https://argo-rollouts.readthedocs.io/
 [Kustomize]: https://kustomize.io/
-[OpenTofu]: https://opentofu.org/
+[Crossplane]: https://www.crossplane.io/
 [Playwright]: https://playwright.dev/
 [ZAP]: https://www.zaproxy.org/
 
