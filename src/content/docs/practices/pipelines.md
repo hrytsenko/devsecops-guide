@@ -2,7 +2,7 @@
 title: Pipelines
 description: Move each change from commit to production through one automated path.
 sidebar:
-  order: 1
+  order: 2
 ---
 
 Move each change from commit to production through one automated path.

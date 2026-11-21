@@ -2,7 +2,7 @@
 title: Platform
 description: Offer each team self-service capabilities with their controls built in.
 sidebar:
-  order: 3
+  order: 4
 ---
 
 Offer each team self-service capabilities with their controls built in.
@@ -27,7 +27,7 @@ The principles apply to the platform itself:
 ### Owners
 
 The [Backstage] software catalog records who owns what.
-Each team is a group that the catalog syncs from the organization's identity provider, and each component, capability, and template is an entity that a descriptor file in its repository declares with its owning team.
+Each team is a group that the catalog syncs from the organization's identity provider, and each component, interface, capability, and template is an entity that a descriptor file in its repository declares with its owning team.
 Every other record of an owner, such as a code owners file, a namespace label, or an alert route, names the same team as the catalog.
 Recording owners in each tool on its own is faster to start with, but lets the records drift apart as teams change.
 

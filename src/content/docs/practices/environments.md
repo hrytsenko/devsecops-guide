@@ -2,7 +2,7 @@
 title: Environments
 description: Run each component isolated, observed, and recoverable in every environment.
 sidebar:
-  order: 2
+  order: 3
 ---
 
 Run each component isolated, observed, and recoverable in every environment.
