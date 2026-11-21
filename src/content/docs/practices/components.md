@@ -57,7 +57,7 @@ Cover each requirement and each mitigation in its threat model with a test of th
 
 The specify stage declares each interface and changes it without breaking its consumers.
 
-It applies [Everything as code] and [Shift left] and relies on [Explicit interface]: each interface is a specification in its component's repository that checks verify where each change is made, and each change to it stays compatible with its consumers, so its component deploys and rolls back on its own.
+It applies [Everything as code] and [Shift left] and relies on [Explicit interface]: each interface is a specification in its component's repository, checked where each change is made, and each change to it stays compatible with its consumers, so its component deploys and rolls back on its own.
 
 ### Declare interfaces
 
@@ -75,17 +75,20 @@ Mark the operations of each old version as deprecated in its specification, and 
 
 The authorize stage verifies who is behind each request and what they may do.
 
-It applies [Everything as code], [Shift left], and [Zero trust] and relies on [Explicit interface] and [External state]: each component authenticates and authorizes every request at its interface rather than trusting its caller, against an authorization model in its repository, tested where each change is made, and relations that a backing service holds.
+It applies [Everything as code], [Shift left], and [Zero trust] and relies on [Explicit interface] and [External state]: each component authenticates every request at its interface rather than trusting its caller, and authorizes it against relations that a backing service holds and an authorization model in its repository, tested where each change is made.
 
-### Authenticate users
+### Authenticate requests
 
 Validate in each component the [OAuth 2.0] access token of each request that it serves for a user, and accept only tokens that the users' identity provider issued for that component, with the scopes that the request's operation requires.
 For each call that a component makes to another component for the user, exchange the token through [OAuth 2.0] token exchange for one issued for that component.
+Take the identity of each call without a user from the service account that the environment verified for it, not from an identity that the caller passes on.
 
 ### Authorize requests
 
 Declare the authorization model of each component in [OpenFGA], as the relations that its users and its consumers' service accounts can have to its resources, and declare next to it the relations that it grants to its consumers' service accounts.
-Keep both in a store of the component's own on the platform's [OpenFGA] server, write the relations of its users to it from the component as its resources change, check each request against the store in the component before acting on it, and deny the request when the store doesn't allow it or the check can't complete.
+Write both from the component on each deployment to its own [OpenFGA] store, which the platform offers as a backing service.
+Write the relations of its users to the store from the component as its resources change.
+Check each request against the store in the component before acting on it, and deny the request when the store doesn't allow it or the check can't complete.
 Test the allowed and denied cases of the model with the [OpenFGA] CLI on each change, and require a person from the owning team to approve each change to the model and its grants through the code owners file.
 
 ## References

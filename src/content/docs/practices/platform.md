@@ -53,7 +53,7 @@ It applies [Self-service] and [Zero trust] and relies on [External configuration
 
 Define each component's pipeline as a capability that composes its [Tekton] triggers, its service accounts, and its [Harbor] project with robot accounts.
 Define each component's part of an environment as a capability that composes the service account, resource quota, and default policies that the environment requires of it.
-Define each backing service that a component needs, such as a database, a cache, or a bucket, as a capability with a few inputs, such as its size and version.
+Define each backing service that a component needs, such as a database or a bucket, as a capability with a few inputs, such as its size and version.
 Compose each one with encryption, private networking, backups on its environment's schedule, access only for its component's service account, egress to it from its component's namespace, and a secret with its endpoints in that namespace.
 
 ### Publish capabilities
@@ -65,7 +65,7 @@ Offer each capability through a [Backstage] software template that asks for its 
 
 The onboard stage creates each component with everything it needs in one request.
 
-It applies [Self-service] and [Zero trust] and relies on [Portable package] and [Built-in telemetry]: a template per language fits every component because each one ships and reports the same way, and gives each component its own identity and scope in every pipeline and environment from its first change.
+It applies [Self-service] and [Zero trust] and relies on [Portable package] and [Built-in telemetry]: a template per language gives each component its own identity and scope in every pipeline and environment from its first change, and fits every component because each one ships and reports the same way.
 
 ### Create components
 

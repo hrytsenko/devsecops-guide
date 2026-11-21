@@ -33,7 +33,8 @@ Static keys are faster to start with, but stay valid wherever they leak until so
 ### Permissions
 
 People and agents have read-only access to every environment.
-When work can't wait for the pipeline, such as a quarantine, a forensic collection, or a mitigation, a person gets access for a few hours to what it needs, such as the affected namespaces and the pipeline's sync of them, the affected nodes, or [Velociraptor], through a group in the identity provider, on approval by another person from the team that owns them.
+When work can't wait for the pipeline, such as a quarantine, a forensic collection, or a mitigation, a person gets access for a few hours to what it needs, such as the affected namespaces and the pipeline's sync of them, the affected nodes, or [Velociraptor].
+A group in the identity provider grants the access, on approval by another person from the team that owns those resources.
 Standing admin access is faster to start with, but lets one leaked credential change production.
 
 ### Signals

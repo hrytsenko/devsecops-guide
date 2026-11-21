@@ -117,7 +117,7 @@ It applies [Everything as code] and [Zero trust] and relies on [External configu
 ### Reconcile infrastructure
 
 Install the platform team's compositions as [Crossplane] packages in the pipeline clusters and in each environment, together with the providers and functions that they use, each pinned by digest.
-Declare the infrastructure of each component in each environment, such as its databases and caches, as [Crossplane] composite resources, and sync them with [Argo CD].
+Declare the infrastructure of each component in each environment, such as its databases and buckets, as [Crossplane] composite resources, and sync them with [Argo CD].
 Reconcile the resources that they compose with [Crossplane] in each environment's own clusters, under credentials for that environment's cloud accounts only.
 Sync each component's pipeline resources and each environment's clusters with [Argo CD] the same way, and reconcile them with [Crossplane] in the pipeline clusters.
 
@@ -126,7 +126,8 @@ Sync each component's pipeline resources and each environment's clusters with [A
 Declare each component's image digest and environment-specific configuration for each environment in a [Kustomize] overlay, and sync the overlays and [flagd] definitions with [Argo CD] with automated pruning and self-healing.
 Restrict each team's [Argo CD] project to the team's own namespaces and deny it the managed resources of [Crossplane] providers, and allow cluster-scoped resources and [Kyverno] policy exceptions only in the platform team's project.
 Sync secrets into each environment from the organization's secret store with [ESO], and keep them out of every environment repository.
-Enforce the platform team's admission policies in each environment with [Kyverno], and admit only images from the organization's [Harbor] that are referenced by digest and attested with an SBOM, and either signed by the [Tekton] chains controller with [SLSA] provenance that names their source repository, or signed by the platform team's import pipeline.
+Enforce the platform team's admission policies in each environment with [Kyverno].
+Admit only images from the organization's [Harbor] that are referenced by digest, attested with an SBOM, and signed either by the [Tekton] chains controller, with [SLSA] provenance that names their source repository, or by the platform team's import pipeline.
 
 ## Promote
 

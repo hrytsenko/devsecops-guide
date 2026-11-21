@@ -12,7 +12,7 @@ src/content/docs/
   principles/        # what every practice rests on
     devsecops.md     # how teams deliver and run software
     cloud-native.md  # what a component does so the platform can run it
-  practices/         # stages of concrete steps that rely on the principles
+  practices/         # stages of concrete steps to apply
     components.md    # from assessment to authorization
     pipelines.md     # from commit to release
     environments.md  # from isolation to recovery

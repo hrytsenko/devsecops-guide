@@ -36,6 +36,6 @@ Production accepts only verified artifacts from verified actors, so no one holds
 
 ## Closed loop
 
-Move each change to production through one automated path, and return production signals and delivery metrics to the team that owns the change (see [Google SRE](https://sre.google/)).
+Move each change to production through one automated path, and return production signals and delivery metrics to the team that owns the change (see [SRE](https://sre.google/)).
 Integrate checks and monitoring with rollout and rollback, so each stage catches deviations and responds to them.
 People and agents detect, analyze, and mitigate incidents and new vulnerabilities under the same controls, and each one ends in a fix and a new check, so it doesn't happen again.
